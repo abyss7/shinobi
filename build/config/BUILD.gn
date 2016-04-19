@@ -1,0 +1,42 @@
+config("base") {
+  cflags = [
+    "-fPIC",
+    "-pipe",
+    "-pthread",
+    "-Wall",
+    "-Wsign-compare",
+    "-Wno-unknown-warning-option",
+    "-Wno-error=assume",
+    "-Wno-error=unused-command-line-argument",
+    "-Werror",
+  ]
+
+  cflags_cc = [ "-std=c++14" ]
+
+  include_dirs = [
+    "//src",
+    "$root_gen_dir/src",
+  ]
+}
+
+config("debug") {
+  cflags = [
+    "-g",
+    "-O0",
+  ]
+
+  defines = [ "_DEBUG" ]
+}
+
+config("release") {
+  cflags = [
+    "-fomit-frame-pointer",
+    "-O3",
+  ]
+
+  defines = [ "NDEBUG" ]
+}
+
+config("version") {
+  defines = [ "VERSION=\"$version\"" ]
+}

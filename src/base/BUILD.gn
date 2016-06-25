@@ -1,0 +1,20 @@
+source_set("base") {
+  visibility += [ "//src/*" ]
+
+  sources = [
+    "aliases.hh",
+    "assert_linux.cc",
+    "location.cc",
+    "logging.cc",
+    "stl_include.hh",
+  ]
+
+  public = [
+    "assert.hh",
+    "attributes.hh",
+    "location.hh",
+    "logging.hh",
+    "path.hh",
+    "using_log.hh",
+  ]
+}

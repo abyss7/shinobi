@@ -11,7 +11,7 @@ config("base") {
     "-Werror",
   ]
 
-  cflags_cc = [ "-std=c++14" ]
+  cflags_cc = [ "-std=c++1z" ]  # for nested namespaces
 
   include_dirs = [
     "//src",

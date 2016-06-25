@@ -1,0 +1,18 @@
+shared_library("languages") {
+  deps = [
+    ":shi",
+  ]
+}
+
+source_set("shi") {
+  sources = [
+    "shi/lexer.cc",
+    "shi/lexer.hh",
+    "shi/token.cc",
+    "shi/token.hh",
+  ]
+
+  deps = [
+    "//src/base:base",
+  ]
+}

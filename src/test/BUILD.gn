@@ -3,9 +3,13 @@ executable("unit_tests") {
 
   sources = [
     "main.cc",
+    "//src/language/shi/lexer_test.cc",
   ]
 
   deps += [
+    "//src/base:base",
+    "//src/language:languages",
+    "//src/third_party/gflags:gflags",
     "//src/third_party/gtest:gtest",
   ]
 }

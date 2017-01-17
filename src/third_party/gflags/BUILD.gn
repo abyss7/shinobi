@@ -1,0 +1,55 @@
+# Generated from CMake with default flags:
+#
+#   BUILD_PACKAGING:BOOL=OFF
+#   BUILD_SHARED_LIBS:BOOL=OFF
+#   BUILD_STATIC_LIBS:BOOL=OFF
+#   BUILD_TESTING:BOOL=OFF
+#   BUILD_gflags_LIB:BOOL=ON
+#   BUILD_gflags_nothreads_LIB:BOOL=ON
+#   INTTYPES_FORMAT:STRING=C99
+#   NAMESPACE:STRING=google;gflags
+#
+# To see full set of flags do:
+#
+#   cmake && cmake -LAH
+#
+
+config("private") {
+  cflags = [
+    "-Wno-shadow",
+  ]
+
+  defines = [
+    "GFLAGS_IS_A_DLL=0",
+  ]
+
+  include_dirs = [
+    "exported/src",
+  ]
+}
+
+config("public") {
+  include_dirs = [
+    host_os,
+  ]
+}
+
+static_library("gflags") {
+  visibility += [
+    "//src/test:unit_tests",
+  ]
+
+  sources = [
+    "exported/src/gflags.cc",
+    "exported/src/gflags_reporting.cc",
+    "exported/src/gflags_completions.cc",
+  ]
+
+  configs += [
+    ":private",
+  ]
+
+  public_configs = [
+    ":public",
+  ]
+}

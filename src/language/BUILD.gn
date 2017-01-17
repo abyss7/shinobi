@@ -1,5 +1,5 @@
 shared_library("languages") {
-  deps = [
+  public_deps = [
     ":shi",
   ]
 }

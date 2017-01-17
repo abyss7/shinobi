@@ -1,0 +1,11 @@
+executable("unit_tests") {
+  testonly = true
+
+  sources = [
+    "main.cc",
+  ]
+
+  deps += [
+    "//src/third_party/gtest:gtest",
+  ]
+}

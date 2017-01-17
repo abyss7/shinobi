@@ -11,8 +11,8 @@ class Location {
   Location(const Path& file_path, ui64 line, ui64 column);
 
   const Path& file_path() const { return path_; }
-  const ui64 line() const { return line_; }
-  const ui64 column() const { return column_; }
+  ui64 line() const { return line_; }
+  ui64 column() const { return column_; }
 
   operator bool() const;
   bool operator<(const Location& other) const;

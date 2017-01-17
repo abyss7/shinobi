@@ -1,9 +1,12 @@
 config("base") {
   cflags = [
+    "-fexceptions",
     "-fPIC",
     "-pipe",
     "-pthread",
     "-Wall",
+    "-Wextra",
+    "-Wshadow",
     "-Wsign-compare",
     "-Wno-unknown-warning-option",
     "-Wno-error=assume",
@@ -17,6 +20,8 @@ config("base") {
     "//src",
     "$root_gen_dir/src",
   ]
+
+  libs = [ "pthread" ]
 }
 
 config("debug") {

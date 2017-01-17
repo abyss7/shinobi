@@ -1,0 +1,58 @@
+# Generated from CMake with default flags:
+#
+#   BUILD_GMOCK:BOOL=ON
+#   BUILD_GTEST:BOOL=OFF
+#   BUILD_SHARED_LIBS:BOOL=OFF
+#   gmock_build_tests:BOOL=ON
+#   gtest_build_samples:BOOL=OFF
+#   gtest_build_tests:BOOL=ON
+#   gtest_disable_pthreads:BOOL=OFF
+#   gtest_force_shared_crt:BOOL=OFF
+#   gtest_hide_internal_symbols:BOOL=OFF
+#
+# To see full set of flags do:
+#
+#   cmake && cmake -LAH
+#
+
+config("private") {
+  cflags = [
+    "-Wno-unused-parameter",
+    "-Wno-missing-field-initializers",
+  ]
+
+  defines = [
+    "GTEST_HAS_PTHREAD=1",
+  ]
+
+  include_dirs = [
+    "exported/googlemock",
+    "exported/googletest",
+  ]
+}
+
+config("public") {
+  include_dirs = [
+    "exported/googlemock/include",
+    "exported/googletest/include",
+  ]
+}
+
+static_library("gtest") {
+  visibility += [
+    "//src/test:unit_tests",
+  ]
+
+  sources = [
+    "exported/googlemock/src/gmock-all.cc",
+    "exported/googletest/src/gtest-all.cc",
+  ]
+
+  configs += [
+    ":private",
+  ]
+
+  public_configs = [
+    ":public",
+  ]
+}

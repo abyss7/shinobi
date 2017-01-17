@@ -3,3 +3,13 @@ group("All") {
     "//src/language:languages",
   ]
 }
+
+if (config_for_tests) {
+  group("Tests") {
+    testonly = true
+
+    deps = [
+      "//src/test:unit_tests",
+    ]
+  }
+}

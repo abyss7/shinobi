@@ -6,7 +6,7 @@ namespace shinobi::language::shi {
 
 class Lexer {
  public:
-  explicit Lexer(const Path& file_path, const String& contents);
+  Lexer(const Path& file_path, const String& contents);
 
   Vector<Token> Tokenize();
 

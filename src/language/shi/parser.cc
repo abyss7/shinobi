@@ -5,6 +5,7 @@ namespace shinobi::language::shi {
 Parser::Parser(Iterator begin, Iterator end) : begin_(begin), end_(end) {}
 
 bool Parser::Next(Token::Type type, ui32 advance) const {
+  // Expect that we don't jump out of range.
   if (begin_ + advance == end_) {
     return false;
   }
@@ -12,7 +13,20 @@ bool Parser::Next(Token::Type type, ui32 advance) const {
   return (begin_ + advance)->type() == type;
 }
 
-Token Parser::Expect(Iterator it, List<Token::Type>&& expected_types) const {
+bool Parser::Next(const Token::TypeList& types) const {
+  for (const auto& type : types) {
+    if (Next(type)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+Token Parser::Expect(const Token::TypeList& expected_types,
+                     ui32 advance) const {
+  auto it = begin_ + advance;
+
   if (it == end_) {
     throw UnexpectedToken(expected_types);
   }
@@ -33,8 +47,8 @@ Token Parser::Expect(Iterator it, List<Token::Type>&& expected_types) const {
   return *it;
 }
 
-Token Parser::Consume(List<Token::Type>&& expected_types) {
-  auto token = Expect(begin_, std::move(expected_types));
+Token Parser::Consume(Token::TypeList&& expected_types) {
+  auto token = Expect(std::move(expected_types));
   ++begin_;
   return token;
 }
@@ -54,15 +68,13 @@ Parser::NodePtr Parser::ParseAssignment() {
 
 Parser::NodePtr Parser::ParseBlock() {
   Consume({Token::LEFT_BRACE});
-
   auto list = ParseStatementList();
-
   Consume({Token::RIGHT_BRACE});
 
   return list;
 }
 
-Parser::NodePtr Parser::ParseCall() {
+Parser::NodePtr Parser::ParseCall(bool expect_block) {
   auto id = Consume({Token::IDENTIFIER});
 
   Consume({Token::LEFT_PAREN});
@@ -75,7 +87,7 @@ Parser::NodePtr Parser::ParseCall() {
   Consume({Token::RIGHT_PAREN});
 
   NodePtr block;
-  if (Next(Token::LEFT_BRACE)) {
+  if (expect_block && Next(Token::LEFT_BRACE)) {
     block = ParseBlock();
   }
 
@@ -110,6 +122,60 @@ Parser::NodePtr Parser::ParseCondition() {
       std::move(if_expr), std::move(if_block), std::move(else_stmt));
 }
 
+Parser::NodePtr Parser::ParseExpression(ui8 precedence) {
+  NodePtr left;
+
+  if (Next(Token::IDENTIFIER)) {
+    if (Next(Token::LEFT_PAREN, 1)) {
+      left = ParseCall(false);
+    } else {
+      left = ParseLValue();
+    }
+  } else if (Next(Token::LEFT_PAREN)) {
+    Consume({Token::LEFT_PAREN});
+    left = ParseExpression();
+    Consume({Token::RIGHT_PAREN});
+  } else if (Next(Token::BANG)) {
+    auto not_token = Consume({Token::BANG});
+    auto not_precedence = not_token.precedence();
+    DCHECK(precedence <= not_precedence);
+    return std::make_unique<NotNode>(ParseExpression(not_precedence));
+  } else if (Next(Token::Literals)) {
+    left = ParseLiteral();
+  } else {
+    return left;
+  }
+
+  // FIXME: looks incorrect!
+  while (Next(Token::BinaryOps)) {
+    if (Expect(Token::BinaryOps).precedence() <= precedence) {
+      return left;
+    }
+
+    auto op = Consume(Token::BinaryOps);
+    auto right = ParseExpression(op.precedence());
+    left = std::make_unique<BinaryOpNode>(op.type(), std::move(left),
+                                          std::move(right));
+  }
+
+  return left;
+}
+
+Parser::NodePtr Parser::ParseExpressionList() {
+  auto list = std::make_unique<StatementListNode>();
+
+  auto expr = ParseExpression();
+  while (Next(Token::COMMA)) {
+    list.Append(expr);
+    Consume({Token::COMMA});
+    expr = ParseExpression();
+  }
+
+  list.Append(expr);
+
+  return list;
+}
+
 Parser::NodePtr Parser::ParseLValue() {
   auto id = Consume({Token::IDENTIFIER});
 
@@ -130,14 +196,14 @@ Parser::NodePtr Parser::ParseLValue() {
 }
 
 Parser::NodePtr Parser::ParseStatement() {
-  Expect(begin_, {Token::IF_TOKEN, Token::IDENTIFIER});
+  Expect({Token::IF_TOKEN, Token::IDENTIFIER});
 
   if (Next(Token::IF_TOKEN)) {
     return ParseCondition();
   }
 
   if (Next(Token::IDENTIFIER)) {
-    Expect(begin_ + 1, {Token::EQUAL, Token::LEFT_PAREN});
+    Expect({Token::EQUAL, Token::LEFT_PAREN}, 1);
 
     if (Next(Token::EQUAL, 1)) {
       return ParseAssignment();

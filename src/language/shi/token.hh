@@ -9,23 +9,27 @@ class Token {
   enum Type {
     INVALID,
 
-    // Basic tokens and keywords
+    // Literals
     INTEGER,      // 12345
     STRING,       // "blah"
-    IDENTIFIER,   // foo
     TRUE_TOKEN,   // true
     FALSE_TOKEN,  // false
-    COMMA,        // ,
-    IF_TOKEN,     // if
-    ELSE_TOKEN,   // else
+
+    // Basic tokens and keywords
+    IDENTIFIER,  // foo
+    COMMA,       // ,
+    IF_TOKEN,    // if
+    ELSE_TOKEN,  // else
 
     // Unary operators
-    PLUS,   // +
-    MINUS,  // -
-    BANG,   // !
+    BANG,  // !
+
+    // Assignment operator
+    EQUAL,  // =
 
     // Binary operators
-    EQUAL,             // =
+    PLUS,              // +
+    MINUS,             // -
     PLUS_EQUALS,       // +=
     MINUS_EQUALS,      // -=
     EQUAL_EQUAL,       // ==
@@ -36,7 +40,9 @@ class Token {
     STRICTLY_GREATER,  // >
     BOOLEAN_AND,       // &&
     BOOLEAN_OR,        // ||
-    DOT,               // .
+
+    // Scope operator
+    DOT,  // .
 
     // Brackets
     LEFT_PAREN,     // (
@@ -52,6 +58,8 @@ class Token {
     TYPE_SIZE
   };
 
+  using TypeList = List<Type>;
+
   Token() = default;
   Token(const Location& location, Type type, const String& value = String());
   Token(Token&&) = default;
@@ -65,13 +73,14 @@ class Token {
     return value_;
   }
   const Location& location() const { return location_; }
-
   LocationRange range() const;
+  ui8 precedence() const { return precedence_[type()]; }
 
  private:
   const Location location_;
   const Type type_ = INVALID;
   const String value_;
+  const static Map<Type, ui8> precedence_;
 };
 
 }  // namespace shinobi::language::shi

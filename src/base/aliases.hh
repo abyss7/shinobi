@@ -6,6 +6,7 @@
 #include STL(list)
 #include STL(memory)
 #include STL(string)
+#include STL(unordered_map)
 #include STL(vector)
 
 namespace shinobi {
@@ -21,6 +22,9 @@ using ui64 = uint64_t;
 
 template <class T>
 using List = std::list<T>;
+
+template <class U, class V>
+using Map = std::unordered_map<U, V>;
 
 template <class U, class V = U>
 using Pair = std::pair<U, V>;

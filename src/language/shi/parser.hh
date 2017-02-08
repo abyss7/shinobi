@@ -8,24 +8,22 @@
 
           File = StatementList .
 
+          StatementList = { Statement } .
           Statement     = Assignment | Call | Condition .
-          LValue        = identifier | ArrayAccess | ScopeAccess .
           Assignment    = LValue AssignOp Expr .
           Call          = identifier "(" [ ExprList ] ")" [ Block ] .
           Condition     = "if" "(" Expr ")" Block
                           [ "else" ( Condition | Block ) ] .
           Block         = "{" StatementList "}" .
-          StatementList = { Statement } .
 
+          LValue      = identifier | ArrayAccess | ScopeAccess .
           ArrayAccess = identifier "[" Expr "]" .
           ScopeAccess = identifier "." identifier .
+          ExprList    = Expr { "," Expr } .
           Expr        = UnaryExpr | Expr BinaryOp Expr .
           UnaryExpr   = PrimaryExpr | UnaryOp UnaryExpr .
-          PrimaryExpr = identifier | integer | string | Call
-                      | ArrayAccess | ScopeAccess | Block
-                      | "(" Expr ")"
-                      | "[" [ ExprList [ "," ] ] "]" .
-          ExprList    = Expr { "," Expr } .
+          PrimaryExpr = LValue | integer | string | Call | "(" Expr ")"
+                        # Call without Block only.
 
           AssignOp = "=" | "+=" | "-=" .
           UnaryOp  = "!" .
@@ -51,13 +49,17 @@ class Parser {
 
  private:
   bool Next(Token::Type type, ui32 advance = 0u) const;
-  Token Expect(Iterator it, List<Token::Type>&& expected_types) const;
-  Token Consume(List<Token::Type>&& expected_types);
+  bool Next(const Token::TypeList& types) const;
+  Token Expect(const Token::TypeList& expected_types, ui32 advance = 0u) const;
+  Token Consume(Token::TypeList&& expected_types);
 
   NodePtr ParseAssignment();
   NodePtr ParseBlock();
-  NodePtr ParseCall();
+  NodePtr ParseCall(bool expect_block);
   NodePtr ParseCondition();
+  NodePtr ParseExpression(ui8 precedence = 0u);
+  NodePtr ParseExpressionList();
+  NodePtr ParseIdentifierOrClosure();
   NodePtr ParseLValue();
   NodePtr ParseStatement();
   NodePtr ParseStatementList();

@@ -1,5 +1,8 @@
 #include <language/shi/parser.hh>
 
+#include <base/assert.hh>
+#include <language/shi/exception.hh>
+
 namespace shinobi::language::shi {
 
 Parser::Parser(Iterator begin, Iterator end) : begin_(begin), end_(end) {}
@@ -23,8 +26,8 @@ bool Parser::Next(const Token::TypeList& types) const {
   return false;
 }
 
-Token Parser::Expect(const Token::TypeList& expected_types,
-                     ui32 advance) const {
+const Token& Parser::Expect(const Token::TypeList& expected_types,
+                            ui32 advance) const {
   auto it = begin_ + advance;
 
   if (it == end_) {
@@ -47,8 +50,8 @@ Token Parser::Expect(const Token::TypeList& expected_types,
   return *it;
 }
 
-Token Parser::Consume(Token::TypeList&& expected_types) {
-  auto token = Expect(std::move(expected_types));
+const Token& Parser::Consume(const Token::TypeList& expected_types) {
+  const auto& token = Expect(expected_types);
   ++begin_;
   return token;
 }
@@ -57,16 +60,17 @@ Token Parser::Consume(Token::TypeList&& expected_types) {
  * Parsing methods in alphabetical order
  */
 
-Parser::NodePtr Parser::ParseAssignment() {
+NodePtr Parser::ParseAssignment() {
   auto lvalue = ParseLValue();
-  auto op = Consume({Token::EQUAL, Token::PLUS_EQUALS, Token::MINUS_EQUALS});
+  const auto& op =
+      Consume({Token::EQUAL, Token::PLUS_EQUALS, Token::MINUS_EQUALS});
   auto rvalue = ParseExpression();
 
-  return std::make_unique<AssignmentNode>(op.type(), std::move(lvalue),
+  return std::make_unique<AssignmentNode>(op, std::move(lvalue),
                                           std::move(rvalue));
 }
 
-Parser::NodePtr Parser::ParseBlock() {
+NodePtr Parser::ParseBlock() {
   Consume({Token::LEFT_BRACE});
   auto list = ParseStatementList();
   Consume({Token::RIGHT_BRACE});
@@ -74,8 +78,8 @@ Parser::NodePtr Parser::ParseBlock() {
   return list;
 }
 
-Parser::NodePtr Parser::ParseCall(bool expect_block) {
-  auto id = Consume({Token::IDENTIFIER});
+NodePtr Parser::ParseCall(bool expect_block) {
+  const auto& id = Consume({Token::IDENTIFIER});
 
   Consume({Token::LEFT_PAREN});
 
@@ -91,13 +95,10 @@ Parser::NodePtr Parser::ParseCall(bool expect_block) {
     block = ParseBlock();
   }
 
-  return std::make_unique<CallNode>(id.value(), std::move(expr_list),
-                                    std::move(block));
+  return std::make_unique<CallNode>(id, std::move(expr_list), std::move(block));
 }
 
-Parser::NodePtr Parser::ParseCondition() {
-  CHECK(begin_->type() == Token::IF_TOKEN);
-
+NodePtr Parser::ParseCondition() {
   Consume({Token::IF_TOKEN});
   Consume({Token::LEFT_PAREN});
 
@@ -122,7 +123,7 @@ Parser::NodePtr Parser::ParseCondition() {
       std::move(if_expr), std::move(if_block), std::move(else_stmt));
 }
 
-Parser::NodePtr Parser::ParseExpression(ui8 precedence) {
+NodePtr Parser::ParseExpression(ui8 precedence) {
   NodePtr left;
 
   if (Next(Token::IDENTIFIER)) {
@@ -135,9 +136,13 @@ Parser::NodePtr Parser::ParseExpression(ui8 precedence) {
     Consume({Token::LEFT_PAREN});
     left = ParseExpression();
     Consume({Token::RIGHT_PAREN});
+  } else if (Next(Token::LEFT_BRACKET)) {
+    Consume({Token::LEFT_BRACKET});
+    left = ParseExpressionList();
+    Consume({Token::RIGHT_BRACKET});
   } else if (Next(Token::BANG)) {
-    auto not_token = Consume({Token::BANG});
-    auto not_precedence = not_token.precedence();
+    const auto& not_token = Consume({Token::BANG});
+    const auto& not_precedence = not_token.precedence();
     DCHECK(precedence <= not_precedence);
     return std::make_unique<NotNode>(ParseExpression(not_precedence));
   } else if (Next(Token::Literals)) {
@@ -146,56 +151,54 @@ Parser::NodePtr Parser::ParseExpression(ui8 precedence) {
     return left;
   }
 
-  // FIXME: looks incorrect!
   while (Next(Token::BinaryOps)) {
     if (Expect(Token::BinaryOps).precedence() <= precedence) {
       return left;
     }
 
-    auto op = Consume(Token::BinaryOps);
+    const auto& op = Consume(Token::BinaryOps);
     auto right = ParseExpression(op.precedence());
-    left = std::make_unique<BinaryOpNode>(op.type(), std::move(left),
-                                          std::move(right));
+    left =
+        std::make_unique<BinaryOpNode>(op, std::move(left), std::move(right));
   }
 
   return left;
 }
 
-Parser::NodePtr Parser::ParseExpressionList() {
+NodePtr Parser::ParseExpressionList() {
   auto list = std::make_unique<StatementListNode>();
 
   auto expr = ParseExpression();
   while (Next(Token::COMMA)) {
-    list.Append(expr);
+    list->Append(std::move(expr));
     Consume({Token::COMMA});
     expr = ParseExpression();
   }
 
-  list.Append(expr);
+  list->Append(std::move(expr));
 
   return list;
 }
 
-Parser::NodePtr Parser::ParseLValue() {
-  auto id = Consume({Token::IDENTIFIER});
+NodePtr Parser::ParseLValue() {
+  const auto& id = Consume({Token::IDENTIFIER});
 
   if (Next(Token::LEFT_BRACKET)) {
     Consume({Token::LEFT_BRACKET});
     auto expr = ParseExpression();
     Consume({Token::RIGHT_BRACKET});
 
-    return std::make_unique<ArrayAccessNode>(id.value(), std::move(expr));
+    return std::make_unique<ArrayAccessNode>(id, std::move(expr));
   }
 
   if (Next(Token::DOT)) {
-    return std::make_unique<ScopeAccessNode>(
-        id.value(), Consume({Token::IDENTIFIER}).value());
+    return std::make_unique<ScopeAccessNode>(id, Consume({Token::IDENTIFIER}));
   }
 
-  return std::make_unique<IdentifierNode>(id.value());
+  return std::make_unique<IdentifierNode>(id);
 }
 
-Parser::NodePtr Parser::ParseStatement() {
+NodePtr Parser::ParseStatement() {
   Expect({Token::IF_TOKEN, Token::IDENTIFIER});
 
   if (Next(Token::IF_TOKEN)) {
@@ -210,18 +213,19 @@ Parser::NodePtr Parser::ParseStatement() {
     }
 
     if (Next(Token::LEFT_PAREN, 1)) {
-      return ParseCall();
+      return ParseCall(true);
     }
   }
 
   NOTREACHED();
+  return NodePtr();
 }
 
-Parser::NodePtr Parser::ParseStatementList() {
+NodePtr Parser::ParseStatementList() {
   auto list = std::make_unique<StatementListNode>();
 
   while (begin_ != end_) {
-    list.Append(ParseStatement());
+    list->Append(ParseStatement());
   }
 
   return list;

@@ -3,6 +3,7 @@
 #include <base/stl_include.hh>
 
 #include STL(cstdint)
+#include STL(exception)
 #include STL(list)
 #include STL(memory)
 #include STL(string)

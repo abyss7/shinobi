@@ -5,6 +5,20 @@
 namespace shinobi::language::shi {
 
 // static
+const Token::TypeList BinaryOps = {
+    Token::PLUS,          Token::MINUS,
+    Token::EQUAL_EQUAL,   Token::NOT_EQUAL,
+    Token::LESS_EQUAL,    Token::GREATER_EQUAL,
+    Token::STRICTLY_LESS, Token::STRICTLY_GREATER,
+    Token::BOOLEAN_AND,   Token::BOOLEAN_OR,
+};
+
+// static
+const Token::TypeList Literals = {
+    Token::INTEGER, Token::STRING, Token::TRUE_TOKEN, Token::FALSE_TOKEN,
+};
+
+// static
 const Map<Token::Type, ui8> Token::precedence_ = {
     {Token::EQUAL, 1},
     {Token::PLUS_EQUALS, 1},

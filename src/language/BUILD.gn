@@ -6,8 +6,12 @@ shared_library("languages") {
 
 source_set("shi") {
   sources = [
+    "shi/exception.hh",
     "shi/lexer.cc",
     "shi/lexer.hh",
+    "shi/node.hh",
+    "shi/parser.cc",
+    "shi/parser.hh",
     "shi/token.cc",
     "shi/token.hh",
   ]

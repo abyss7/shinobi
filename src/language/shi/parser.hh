@@ -1,5 +1,6 @@
 #pragma once
 
+#include <language/shi/node.hh>
 #include <language/shi/token.hh>
 
 /* Language Shi Grammar.
@@ -23,7 +24,8 @@
           Expr        = UnaryExpr | Expr BinaryOp Expr .
           UnaryExpr   = PrimaryExpr | UnaryOp UnaryExpr .
           PrimaryExpr = LValue | integer | string | Call | "(" Expr ")"
-                        # Call without Block only.
+                      | "[" [ ExprList [ "," ] ] "]" .
+                      # Call without Block only.
 
           AssignOp = "=" | "+=" | "-=" .
           UnaryOp  = "!" .
@@ -41,7 +43,6 @@ namespace shinobi::language::shi {
 class Parser {
  public:
   using Iterator = Vector<Token>::const_iterator;
-  using NodePtr = UniquePtr<Node>;
 
   Parser(Iterator begin, Iterator end);
 
@@ -50,8 +51,9 @@ class Parser {
  private:
   bool Next(Token::Type type, ui32 advance = 0u) const;
   bool Next(const Token::TypeList& types) const;
-  Token Expect(const Token::TypeList& expected_types, ui32 advance = 0u) const;
-  Token Consume(Token::TypeList&& expected_types);
+  const Token& Expect(const Token::TypeList& expected_types,
+                      ui32 advance = 0u) const;
+  const Token& Consume(const Token::TypeList& expected_types);
 
   NodePtr ParseAssignment();
   NodePtr ParseBlock();
@@ -59,7 +61,7 @@ class Parser {
   NodePtr ParseCondition();
   NodePtr ParseExpression(ui8 precedence = 0u);
   NodePtr ParseExpressionList();
-  NodePtr ParseIdentifierOrClosure();
+  NodePtr ParseLiteral();
   NodePtr ParseLValue();
   NodePtr ParseStatement();
   NodePtr ParseStatementList();

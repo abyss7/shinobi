@@ -1,6 +1,7 @@
 #include <language/shi/lexer.hh>
 
 #include <base/assert.hh>
+#include <language/shi/exception.hh>
 
 namespace shinobi::language::shi {
 
@@ -87,7 +88,7 @@ Token Lexer::Next(bool& done) {
     return ConsumeComment();
   }
 
-  // TODO: raise syntax error about unexpected symbol.
+  throw UnexpectedSymbol(Current(), CurrentLocation());
 
   NOTREACHED();
   return Token();
@@ -211,9 +212,10 @@ Token Lexer::ConsumeInteger() {
     Advance();
   }
 
-  return Token(location, Token::INTEGER,
-               contents_.substr(location.column(), CurrentLocation().column() -
-                                                       location.column()));
+  return Token(
+      location, Token::INTEGER,
+      contents_.substr(location.column(),
+                       CurrentLocation().column() - location.column()));
 }
 
 Token Lexer::ConsumeString() {
@@ -223,13 +225,15 @@ Token Lexer::ConsumeString() {
     Advance();
   }
 
-  // TODO: raise syntax error about unexpected end of string.
-  CHECK(Current() == '"');
+  if (Current() != '"') {
+    throw UnexpectedSymbol(Current(), CurrentLocation());
+  }
   Advance();
 
-  return Token(location, Token::STRING,
-               contents_.substr(location.column(), CurrentLocation().column() -
-                                                       location.column()));
+  return Token(
+      location, Token::STRING,
+      contents_.substr(location.column(),
+                       CurrentLocation().column() - location.column()));
 }
 
 Token Lexer::ConsumeIdentifierOrKeyword() {
@@ -261,9 +265,10 @@ Token Lexer::ConsumeComment() {
     Advance();
   }
 
-  return Token(location, Token::COMMENT,
-               contents_.substr(location.column(), CurrentLocation().column() -
-                                                       location.column()));
+  return Token(
+      location, Token::COMMENT,
+      contents_.substr(location.column(),
+                       CurrentLocation().column() - location.column()));
 }
 
 }  // namespace shinobi::language::shi

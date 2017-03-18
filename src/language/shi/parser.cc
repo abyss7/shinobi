@@ -145,18 +145,18 @@ NodePtr Parser::ParseExpression(ui8 precedence) {
     const auto& not_precedence = not_token.precedence();
     DCHECK(precedence <= not_precedence);
     return std::make_unique<NotNode>(ParseExpression(not_precedence));
-  } else if (Next(Token::Literals)) {
+  } else if (Next(Token::Literals())) {
     left = ParseLiteral();
   } else {
     return left;
   }
 
-  while (Next(Token::BinaryOps)) {
-    if (Expect(Token::BinaryOps).precedence() <= precedence) {
+  while (Next(Token::BinaryOps())) {
+    if (Expect(Token::BinaryOps()).precedence() <= precedence) {
       return left;
     }
 
-    const auto& op = Consume(Token::BinaryOps);
+    const auto& op = Consume(Token::BinaryOps());
     auto right = ParseExpression(op.precedence());
     left =
         std::make_unique<BinaryOpNode>(op, std::move(left), std::move(right));
@@ -178,6 +178,11 @@ NodePtr Parser::ParseExpressionList() {
   list->Append(std::move(expr));
 
   return list;
+}
+
+NodePtr Parser::ParseLiteral() {
+  const auto& id = Consume(Token::Literals());
+  return std::make_unique<LiteralNode>(id);
 }
 
 NodePtr Parser::ParseLValue() {

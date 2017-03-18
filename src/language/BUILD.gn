@@ -4,17 +4,27 @@ shared_library("languages") {
   ]
 }
 
+config("private") {
+  cflags = [
+    "-Wno-error=unused-private-field",
+  ]
+}
+
 source_set("shi") {
   sources = [
+    "shi/exception.cc",
     "shi/exception.hh",
     "shi/lexer.cc",
     "shi/lexer.hh",
+    "shi/node.cc",
     "shi/node.hh",
     "shi/parser.cc",
     "shi/parser.hh",
     "shi/token.cc",
     "shi/token.hh",
   ]
+
+  configs += [ ":private" ]
 
   deps = [
     "//src/base:base",

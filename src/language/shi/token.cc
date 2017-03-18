@@ -5,18 +5,55 @@
 namespace shinobi::language::shi {
 
 // static
-const Token::TypeList BinaryOps = {
-    Token::PLUS,          Token::MINUS,
-    Token::EQUAL_EQUAL,   Token::NOT_EQUAL,
-    Token::LESS_EQUAL,    Token::GREATER_EQUAL,
-    Token::STRICTLY_LESS, Token::STRICTLY_GREATER,
-    Token::BOOLEAN_AND,   Token::BOOLEAN_OR,
-};
+Token::TypeList Token::BinaryOps() {
+  return {
+      Token::PLUS,          Token::MINUS,
+      Token::EQUAL_EQUAL,   Token::NOT_EQUAL,
+      Token::LESS_EQUAL,    Token::GREATER_EQUAL,
+      Token::STRICTLY_LESS, Token::STRICTLY_GREATER,
+      Token::BOOLEAN_AND,   Token::BOOLEAN_OR,
+  };
+}
 
 // static
-const Token::TypeList Literals = {
-    Token::INTEGER, Token::STRING, Token::TRUE_TOKEN, Token::FALSE_TOKEN,
-};
+Token::TypeList Token::Literals() {
+  return {
+      Token::INTEGER, Token::STRING, Token::TRUE_TOKEN, Token::FALSE_TOKEN,
+  };
+}
+
+// static
+String Token::PrintType(Token::Type type) {
+  switch (type) {
+    case INTEGER:
+      return "integer literal";
+    case STRING:
+      return "string literal";
+    case TRUE_TOKEN:
+      return "\"true\" keyword";
+    case FALSE_TOKEN:
+      return "\"false\" keyword";
+    case IDENTIFIER:
+      return "identifier";
+    case COMMA:
+      return "comma";
+    case IF_TOKEN:
+      return "\"if\" keyword";
+    case ELSE_TOKEN:
+      return "\"else\" keyword";
+    case BANG:
+      return "logical \"not\"";
+    case EQUAL:
+      return "assignment";
+    case PLUS:
+      return "addition";
+    case MINUS:
+      return "substraction";
+    default:
+      // TODO: add strings for all types.
+      return "TODO:UNKNOWN";
+  }
+}
 
 // static
 const Map<Token::Type, ui8> Token::precedence_ = {

@@ -76,7 +76,10 @@ class Token {
   LocationRange range() const;
   ui8 precedence() const { return precedence_.at(type()); }
 
-  const static TypeList BinaryOps, Literals;
+  static TypeList BinaryOps();
+  static TypeList Literals();
+
+  static String PrintType(Type type);
 
  private:
   const Location location_;

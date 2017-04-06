@@ -8,11 +8,12 @@ namespace shinobi {
 class Location {
  public:
   Location() {}
-  Location(const Path& file_path, ui64 line, ui64 column);
+  Location(const Path& file_path, ui64 line, ui64 column, ui64 byte);
 
   const Path& file_path() const { return path_; }
   ui64 line() const { return line_; }
   ui64 column() const { return column_; }
+  ui64 byte() const { return byte_; }
 
   operator bool() const;
   bool operator<(const Location& other) const;
@@ -21,7 +22,8 @@ class Location {
   static constexpr ui64 INVALID_VALUE = 0u;
 
   const Path path_;
-  const ui64 line_ = INVALID_VALUE, column_ = INVALID_VALUE;
+  const ui64 line_ = INVALID_VALUE, column_ = INVALID_VALUE,
+             byte_ = INVALID_VALUE;
 };
 
 class LocationRange {

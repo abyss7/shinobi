@@ -31,7 +31,8 @@ const Token& Parser::Expect(const Token::TypeList& expected_types,
   auto it = begin_ + advance;
 
   if (it == end_) {
-    throw UnexpectedToken(expected_types);
+    // TODO: pass location of the end of tokens.
+    throw UnexpectedEndOfTokens(expected_types, Location());
   }
 
   bool good = false;
@@ -44,7 +45,7 @@ const Token& Parser::Expect(const Token::TypeList& expected_types,
   }
 
   if (!good) {
-    throw UnexpectedToken(expected_types);
+    throw UnexpectedToken(*it);
   }
 
   return *it;

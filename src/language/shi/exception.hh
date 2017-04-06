@@ -43,4 +43,10 @@ class UnexpectedToken : public SyntaxError {
   UnexpectedToken(const Token& token, const Token::TypeList& expected);
 };
 
+class UnexpectedEndOfTokens : public SyntaxError {
+ public:
+  UnexpectedEndOfTokens(const Token::TypeList& expected_types,
+                        const Location& location);
+};
+
 }  // namespace shinobi::language::shi

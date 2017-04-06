@@ -75,7 +75,64 @@ const Map<Token::Type, ui8> Token::precedence_ = {
 };
 
 Token::Token(const Location& location, Type type, const String& value)
-    : location_(location), type_(type), value_(value) {
+    : location_(location), type_(type), value_([&value, &type]() -> String {
+        switch (type) {
+          case TRUE_TOKEN:
+            return "true";
+          case FALSE_TOKEN:
+            return "false";
+          case COMMA:
+            return ",";
+          case IF_TOKEN:
+            return "if";
+          case ELSE_TOKEN:
+            return "else";
+          case BANG:
+            return "!";
+          case EQUAL:
+            return "=";
+          case PLUS:
+            return "+";
+          case MINUS:
+            return "-";
+          case PLUS_EQUALS:
+            return "+=";
+          case MINUS_EQUALS:
+            return "-=";
+          case EQUAL_EQUAL:
+            return "==";
+          case NOT_EQUAL:
+            return "!=";
+          case LESS_EQUAL:
+            return "<=";
+          case GREATER_EQUAL:
+            return ">=";
+          case STRICTLY_LESS:
+            return "<";
+          case STRICTLY_GREATER:
+            return ">";
+          case BOOLEAN_AND:
+            return "&&";
+          case BOOLEAN_OR:
+            return "||";
+          case DOT:
+            return ".";
+          case LEFT_PAREN:
+            return "(";
+          case RIGHT_PAREN:
+            return ")";
+          case LEFT_BRACKET:
+            return "[";
+          case RIGHT_BRACKET:
+            return "]";
+          case LEFT_BRACE:
+            return "{";
+          case RIGHT_BRACE:
+            return "}";
+          default:
+            return value;
+        }
+      }()) {
   DCHECK(location_);
   DCHECK(type_ != INVALID);
 }
@@ -83,7 +140,8 @@ Token::Token(const Location& location, Type type, const String& value)
 LocationRange Token::range() const {
   return LocationRange(location_,
                        Location(location_.file_path(), location_.line(),
-                                location_.column() + value().size()));
+                                location_.column() + value().size(),
+                                location_.byte() + value().size()));
 }
 
 }  // namespace shinobi::language::shi

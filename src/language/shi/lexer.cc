@@ -20,13 +20,6 @@ Vector<Token> Lexer::Tokenize() {
 }
 
 Token Lexer::Next(bool& done) {
-  // Check that current position is inside contents.
-  if (current_ == contents_.size()) {
-    done = true;
-    return Token();
-  }
-  DCHECK(current_ < contents_.size());
-
   // Trim all the whitespace before token.
   for (bool token_found = false; current_ < contents_.size() && !token_found;) {
     switch (Current()) {
@@ -44,6 +37,13 @@ Token Lexer::Next(bool& done) {
         token_found = true;
     }
   }
+
+  // Check that current position is inside contents.
+  if (current_ == contents_.size()) {
+    done = true;
+    return Token();
+  }
+  DCHECK(current_ < contents_.size());
 
   auto location = CurrentLocation();
 
@@ -129,10 +129,10 @@ bool Lexer::IsOneSymbolToken(Token::Type& type) const {
       type = Token::RIGHT_PAREN;
       return true;
     case '[':
-      type = Token::LEFT_BRACE;
+      type = Token::LEFT_BRACKET;
       return true;
     case ']':
-      type = Token::RIGHT_BRACE;
+      type = Token::RIGHT_BRACKET;
       return true;
     case '.':
       type = Token::DOT;
@@ -212,10 +212,9 @@ Token Lexer::ConsumeInteger() {
     Advance();
   }
 
-  return Token(
-      location, Token::INTEGER,
-      contents_.substr(location.column(),
-                       CurrentLocation().column() - location.column()));
+  return Token(location, Token::INTEGER,
+               contents_.substr(location.byte() - 1,
+                                CurrentLocation().byte() - location.byte()));
 }
 
 Token Lexer::ConsumeString() {
@@ -230,10 +229,9 @@ Token Lexer::ConsumeString() {
   }
   Advance();
 
-  return Token(
-      location, Token::STRING,
-      contents_.substr(location.column(),
-                       CurrentLocation().column() - location.column()));
+  return Token(location, Token::STRING,
+               contents_.substr(location.byte() - 1,
+                                CurrentLocation().byte() - location.byte()));
 }
 
 Token Lexer::ConsumeIdentifierOrKeyword() {
@@ -243,8 +241,8 @@ Token Lexer::ConsumeIdentifierOrKeyword() {
     Advance();
   }
 
-  auto value = contents_.substr(location.column(),
-                                CurrentLocation().column() - location.column());
+  auto value = contents_.substr(location.byte() - 1,
+                                CurrentLocation().byte() - location.byte());
 
   if (value == "if") {
     return Token(location, Token::IF_TOKEN);
@@ -265,10 +263,9 @@ Token Lexer::ConsumeComment() {
     Advance();
   }
 
-  return Token(
-      location, Token::COMMENT,
-      contents_.substr(location.column(),
-                       CurrentLocation().column() - location.column()));
+  return Token(location, Token::COMMENT,
+               contents_.substr(location.byte() - 1,
+                                CurrentLocation().byte() - location.byte()));
 }
 
 }  // namespace shinobi::language::shi

@@ -68,10 +68,7 @@ class Token {
   Token& operator=(const Token&) = delete;
 
   Type type() const { return type_; }
-  const String& value() const {
-    // TODO: for known token types value should be auto-generated.
-    return value_;
-  }
+  const String& value() const { return value_; }
   const Location& location() const { return location_; }
   LocationRange range() const;
   ui8 precedence() const { return precedence_.at(type()); }

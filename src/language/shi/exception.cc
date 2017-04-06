@@ -1,5 +1,9 @@
 #include <language/shi/exception.hh>
 
+#include STL(cctype)
+#include STL(iomanip)
+#include STL(sstream)
+
 namespace shinobi::language::shi {
 
 const char* SyntaxError::what() const noexcept {
@@ -14,7 +18,13 @@ const char* SyntaxError::what() const noexcept {
 
 UnexpectedSymbol::UnexpectedSymbol(const char symbol, const Location& location)
     : SyntaxError(location) {
-  SetUnexpected("symbol " + String(1, symbol));
+  if (std::isprint(symbol)) {
+    SetUnexpected("symbol " + String(1, symbol));
+  } else {
+    std::stringstream ss;
+    ss << "\\x" << std::hex << std::setfill('0') << std::setw(2) << symbol;
+    SetUnexpected("symbol " + ss.str());
+  }
 }
 
 UnexpectedSymbol::UnexpectedSymbol(const char symbol, const Location& location,
@@ -51,6 +61,14 @@ UnexpectedToken::UnexpectedToken(const Token& token,
     }
   }
   SetExpected(expected_str);
+}
+
+UnexpectedEndOfTokens::UnexpectedEndOfTokens(
+    const Token::TypeList& expected_types, const Location& location)
+    : SyntaxError(location) {
+  // TODO: compose a proper string.
+  (void)expected_types;
+  SetExpected("");
 }
 
 }  // namespace shinobi::language::shi

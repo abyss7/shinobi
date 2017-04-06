@@ -4,14 +4,20 @@
 
 namespace shinobi {
 
-Location::Location(const Path& file_path, ui64 line_number, ui64 column_number)
-    : path_(file_path), line_(line_number), column_(column_number) {
+Location::Location(const Path& file_path, ui64 line_number, ui64 column_number,
+                   ui64 byte)
+    : path_(file_path),
+      line_(line_number),
+      column_(column_number),
+      byte_(byte) {
   DCHECK(line_ != INVALID_VALUE);
   DCHECK(column_ != INVALID_VALUE);
+  DCHECK(byte_ != INVALID_VALUE);
 }
 
 Location::operator bool() const {
-  return line_ != INVALID_VALUE && column_ != INVALID_VALUE;
+  return line_ != INVALID_VALUE && column_ != INVALID_VALUE &&
+         byte_ != INVALID_VALUE;
 }
 
 bool Location::operator<(const Location& other) const {

@@ -13,7 +13,9 @@ class Lexer {
  private:
   Token Next(bool& done);
 
-  Location CurrentLocation() const { return Location(path_, line_, column_); }
+  Location CurrentLocation() const {
+    return Location(path_, line_, column_, current_ + 1);
+  }
   const char& Current() const { return contents_[current_]; }
   char LookAhead() const;
   // returns \0 if there is nothing ahead.

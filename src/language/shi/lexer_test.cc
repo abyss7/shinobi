@@ -262,13 +262,17 @@ TEST_F(LexerShi, NoWhitespace) {
 
 TEST_F(LexerShi, GoodStrings) {
   const String input =
-      "\"1#1\""
+      "\"1#*1\""
       "\"\"\n";
   Tokenize(input);
 
   ASSERT_EQ(3u, tokens.size());
-  EXPECT_EQ(std::make_tuple("\"1#1\"", Token::STRING),
+
+  // Test dash (potential comment) inside string and unknown symbol.
+  EXPECT_EQ(std::make_tuple("\"1#*1\"", Token::STRING),
             std::make_tuple(tokens[0].value(), tokens[0].type()));
+
+  // Test empty string and two strings in-a-row.
   EXPECT_EQ(std::make_tuple("\"\"", Token::STRING),
             std::make_tuple(tokens[1].value(), tokens[1].type()));
   EXPECT_EQ(Token::INVALID, tokens[2].type());
@@ -277,6 +281,10 @@ TEST_F(LexerShi, GoodStrings) {
 TEST_F(LexerShi, BadStrings) {
   EXPECT_THROW({ Tokenize("\"123\n\""); }, SyntaxError);
   EXPECT_THROW({ Tokenize("\"123"); }, SyntaxError);
+}
+
+TEST_F(LexerShi, UnknownSymbol) {
+  EXPECT_THROW({ Tokenize("*"); }, SyntaxError);
 }
 
 }  // namespace language::shi

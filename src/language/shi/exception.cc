@@ -20,9 +20,11 @@ UnexpectedSymbol::UnexpectedSymbol(const char symbol, const Location& location)
     : SyntaxError(location) {
   if (std::isprint(symbol)) {
     SetUnexpected("symbol " + String(1, symbol));
+  } else if (symbol == '\n') {
+    SetUnexpected("symbol \\n");
   } else {
     std::stringstream ss;
-    ss << "\\x" << std::hex << std::setfill('0') << std::setw(2) << symbol;
+    ss << "\\x" << std::setfill('0') << std::setw(2) << std::hex << (int)symbol;
     SetUnexpected("symbol " + ss.str());
   }
 }

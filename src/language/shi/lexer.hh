@@ -36,7 +36,7 @@ class Lexer {
   Token ConsumeIdentifierOrKeyword();
   Token ConsumeComment();
 
-  const Path& path_;
+  const Path path_;
   const String& contents_;
   ui64 current_ = 0, line_ = 1, column_ = 1;
 };

@@ -212,14 +212,14 @@ NodePtr Parser::ParseStatement() {
   }
 
   if (Next(Token::IDENTIFIER)) {
-    Expect({Token::EQUAL, Token::LEFT_PAREN}, 1);
-
-    if (Next(Token::EQUAL, 1)) {
-      return ParseAssignment();
-    }
+    Expect({Token::EQUAL, Token::PLUS_EQUALS, Token::MINUS_EQUALS,
+            Token::LEFT_PAREN},
+           1);
 
     if (Next(Token::LEFT_PAREN, 1)) {
       return ParseCall(true);
+    } else {
+      return ParseAssignment();
     }
   }
 

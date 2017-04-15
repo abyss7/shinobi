@@ -45,7 +45,7 @@ const Token& Parser::Expect(const Token::TypeList& expected_types,
   }
 
   if (!good) {
-    throw UnexpectedToken(*it);
+    throw UnexpectedToken(*it, expected_types);
   }
 
   return *it;
@@ -205,8 +205,6 @@ NodePtr Parser::ParseLValue() {
 }
 
 NodePtr Parser::ParseStatement() {
-  Expect({Token::IF_TOKEN, Token::IDENTIFIER});
-
   if (Next(Token::IF_TOKEN)) {
     return ParseCondition();
   }
@@ -223,7 +221,6 @@ NodePtr Parser::ParseStatement() {
     }
   }
 
-  NOTREACHED();
   return NodePtr();
 }
 
@@ -231,7 +228,12 @@ NodePtr Parser::ParseStatementList() {
   auto list = std::make_unique<StatementListNode>();
 
   while (begin_ != end_) {
-    list->Append(ParseStatement());
+    NodePtr stmt = ParseStatement();
+    if (!stmt) {
+      // Statement list is over.
+      break;
+    }
+    list->Append(std::move(stmt));
   }
 
   return list;

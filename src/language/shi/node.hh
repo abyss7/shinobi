@@ -4,13 +4,41 @@
 
 namespace shinobi::language::shi {
 
-class Node {};
+class ArrayAccessNode;
+class AssignmentNode;
+class BinaryOpNode;
+class CallNode;
+class ConditionNode;
+class IdentifierNode;
+class LiteralNode;
+class NotNode;
+class ScopeAccessNode;
+class StatementListNode;
+
+class Node {
+ public:
+  virtual ~Node() {}
+
+  const ArrayAccessNode* asArrayAccess() const;
+  const AssignmentNode* asAssignment() const;
+  const BinaryOpNode* asBinaryOp() const;
+  const CallNode* asCall() const;
+  const ConditionNode* asCondition() const;
+  const IdentifierNode* asIdentifier() const;
+  const LiteralNode* asLiteral() const;
+  const NotNode* asNot() const;
+  const ScopeAccessNode* asScopeAccess() const;
+  const StatementListNode* asStatementList() const;
+};
 
 using NodePtr = UniquePtr<Node>;
 
 class ArrayAccessNode : public Node {
  public:
   ArrayAccessNode(const Token& id, NodePtr expr);
+
+  inline const Token& identifier() const { return id_; }
+  inline const Node* expression() const { return expr_.get(); }
 
  private:
   const Token& id_;
@@ -21,6 +49,10 @@ class AssignmentNode : public Node {
  public:
   AssignmentNode(const Token& op, NodePtr lvalue, NodePtr rvalue);
 
+  inline const Token& operation() const { return op_; }
+  inline const Node* left_value() const { return lvalue_.get(); }
+  inline const Node* right_value() const { return rvalue_.get(); }
+
  private:
   const Token& op_;
   NodePtr lvalue_, rvalue_;
@@ -29,6 +61,10 @@ class AssignmentNode : public Node {
 class BinaryOpNode : public Node {
  public:
   BinaryOpNode(const Token& op, NodePtr lexpr, NodePtr rexpr);
+
+  const Token& operation() const { return op_; }
+  inline const Node* left_expression() const { return lexpr_.get(); }
+  inline const Node* right_expression() const { return rexpr_.get(); }
 
  private:
   const Token& op_;
@@ -39,6 +75,10 @@ class CallNode : public Node {
  public:
   CallNode(const Token& id, NodePtr expr_list, NodePtr block);
 
+  const Token& identifier() const { return id_; }
+  inline const Node* expression_list() const { return expr_list_.get(); }
+  inline const Node* block() const { return block_.get(); }
+
  private:
   const Token& id_;
   NodePtr expr_list_, block_;
@@ -48,6 +88,10 @@ class ConditionNode : public Node {
  public:
   ConditionNode(NodePtr if_expr, NodePtr if_block, NodePtr else_stmt);
 
+  inline const Node* if_expression() const { return if_expr_.get(); }
+  inline const Node* if_block() const { return if_block_.get(); }
+  inline const Node* else_statement() const { return else_stmt_.get(); }
+
  private:
   NodePtr if_expr_, if_block_, else_stmt_;
 };
@@ -56,21 +100,27 @@ class IdentifierNode : public Node {
  public:
   explicit IdentifierNode(const Token& id);
 
+  inline const Token& identifier() const { return id_; }
+
  private:
   const Token& id_;
 };
 
 class LiteralNode : public Node {
  public:
-  explicit LiteralNode(const Token& id);
+  explicit LiteralNode(const Token& value);
+
+  inline const Token& value() const { return value_; }
 
  private:
-  const Token& id_;
+  const Token& value_;
 };
 
 class NotNode : public Node {
  public:
   explicit NotNode(NodePtr expr);
+
+  inline const Node* expression() const { return expr_.get(); }
 
  private:
   NodePtr expr_;
@@ -80,6 +130,9 @@ class ScopeAccessNode : public Node {
  public:
   ScopeAccessNode(const Token& id, const Token& inner);
 
+  inline const Token& identifier() const { return id_; }
+  inline const Token& inner() const { return inner_; }
+
  private:
   const Token &id_, &inner_;
 };
@@ -87,6 +140,9 @@ class ScopeAccessNode : public Node {
 class StatementListNode : public Node {
  public:
   void Append(NodePtr stmt);
+
+  inline List<NodePtr>::const_iterator begin() const { return stmts_.begin(); }
+  inline List<NodePtr>::const_iterator end() const { return stmts_.end(); }
 
  private:
   List<NodePtr> stmts_;

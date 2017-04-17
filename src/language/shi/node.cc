@@ -1,6 +1,58 @@
 #include <language/shi/node.hh>
 
+#include <base/assert.hh>
+
 namespace shinobi::language::shi {
+
+const ArrayAccessNode* Node::asArrayAccess() const {
+  DCHECK(dynamic_cast<const ArrayAccessNode*>(this));
+  return static_cast<const ArrayAccessNode*>(this);
+}
+
+const AssignmentNode* Node::asAssignment() const {
+  DCHECK(dynamic_cast<const AssignmentNode*>(this));
+  return static_cast<const AssignmentNode*>(this);
+}
+
+const BinaryOpNode* Node::asBinaryOp() const {
+  DCHECK(dynamic_cast<const BinaryOpNode*>(this));
+  return static_cast<const BinaryOpNode*>(this);
+}
+
+const CallNode* Node::asCall() const {
+  DCHECK(dynamic_cast<const CallNode*>(this));
+  return static_cast<const CallNode*>(this);
+}
+
+const ConditionNode* Node::asCondition() const {
+  DCHECK(dynamic_cast<const ConditionNode*>(this));
+  return static_cast<const ConditionNode*>(this);
+}
+
+const IdentifierNode* Node::asIdentifier() const {
+  DCHECK(dynamic_cast<const IdentifierNode*>(this));
+  return static_cast<const IdentifierNode*>(this);
+}
+
+const LiteralNode* Node::asLiteral() const {
+  DCHECK(dynamic_cast<const LiteralNode*>(this));
+  return static_cast<const LiteralNode*>(this);
+}
+
+const NotNode* Node::asNot() const {
+  DCHECK(dynamic_cast<const NotNode*>(this));
+  return static_cast<const NotNode*>(this);
+}
+
+const ScopeAccessNode* Node::asScopeAccess() const {
+  DCHECK(dynamic_cast<const ScopeAccessNode*>(this));
+  return static_cast<const ScopeAccessNode*>(this);
+}
+
+const StatementListNode* Node::asStatementList() const {
+  DCHECK(dynamic_cast<const StatementListNode*>(this));
+  return static_cast<const StatementListNode*>(this);
+}
 
 ArrayAccessNode::ArrayAccessNode(const Token& id, NodePtr expr)
     : id_(id), expr_(std::move(expr)) {}
@@ -22,7 +74,7 @@ ConditionNode::ConditionNode(NodePtr if_expr, NodePtr if_block,
 
 IdentifierNode::IdentifierNode(const Token& id) : id_(id) {}
 
-LiteralNode::LiteralNode(const Token& id) : id_(id) {}
+LiteralNode::LiteralNode(const Token& value) : value_(value) {}
 
 NotNode::NotNode(NodePtr expr) : expr_(std::move(expr)) {}
 

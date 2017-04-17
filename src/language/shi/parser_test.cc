@@ -33,10 +33,29 @@ TEST_F(ParserShi, SimpleExample) {
       "    deps = [ \"library\" ]\n"
       "    if (os == \"macos\") {\n"
       "        configs += generate_smth()\n"
+      "    } else if (os != \"linux\") {\n"
+      "        headers -= \"test.h\" + !public_headers\n"
+      "    } else {\n"
+      "        testing = true && ( os == \"win\")\n"
       "    }\n"
       "}\n";
 
   Parse(input);
+  ASSERT_TRUE(top_node->asStatementList());
+
+  auto stmt_it = top_node->asStatementList()->begin(),
+       end = top_node->asStatementList()->end();
+
+  {
+    ASSERT_NE(end, stmt_it);
+
+    auto* stmt = (*stmt_it)->asAssignment();
+    ASSERT_TRUE(stmt);
+
+    auto* lvalue = stmt->left_value()->asIdentifier();
+    ASSERT_TRUE(lvalue);
+    EXPECT_EQ("configs", lvalue->identifier().value());
+  }
 }
 
 }  // namespace language::shi

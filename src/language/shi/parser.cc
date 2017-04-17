@@ -182,8 +182,8 @@ NodePtr Parser::ParseExpressionList() {
 }
 
 NodePtr Parser::ParseLiteral() {
-  const auto& id = Consume(Token::Literals());
-  return std::make_unique<LiteralNode>(id);
+  const auto& value = Consume(Token::Literals());
+  return std::make_unique<LiteralNode>(value);
 }
 
 NodePtr Parser::ParseLValue() {

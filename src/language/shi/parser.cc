@@ -84,10 +84,7 @@ NodePtr Parser::ParseCall(bool expect_block) {
 
   Consume({Token::LEFT_PAREN});
 
-  NodePtr expr_list;
-  if (!Next(Token::RIGHT_PAREN)) {
-    expr_list = ParseExpressionList();
-  }
+  auto expr_list = ParseExpressionList();
 
   Consume({Token::RIGHT_PAREN});
 
@@ -167,7 +164,7 @@ NodePtr Parser::ParseExpression(ui8 precedence) {
 }
 
 NodePtr Parser::ParseExpressionList() {
-  auto list = std::make_unique<StatementListNode>();
+  auto list = std::make_unique<ExpressionListNode>();
 
   auto expr = ParseExpression();
   while (Next(Token::COMMA)) {
@@ -176,7 +173,9 @@ NodePtr Parser::ParseExpressionList() {
     expr = ParseExpression();
   }
 
-  list->Append(std::move(expr));
+  if (expr) {
+    list->Append(std::move(expr));
+  }
 
   return list;
 }

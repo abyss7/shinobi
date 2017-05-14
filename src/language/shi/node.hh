@@ -9,6 +9,7 @@ class AssignmentNode;
 class BinaryOpNode;
 class CallNode;
 class ConditionNode;
+class ExpressionListNode;
 class IdentifierNode;
 class LiteralNode;
 class NotNode;
@@ -17,18 +18,40 @@ class StatementListNode;
 
 class Node {
  public:
+  // Need explicit node types for |Writer|.
+  enum Type {
+    ARRAY_ACCESS,
+    ASSIGNMENT,
+    BINARY_OP,
+    CALL,
+    CONDITION,
+    EXPRESSION_LIST,
+    IDENTIFIER,
+    LITERAL,
+    NOT,
+    SCOPE_ACCESS,
+    STATEMENT_LIST,
+  };
+
+  explicit Node(Type type) : type_(type) {}
   virtual ~Node() {}
+
+  inline Type type() const { return type_; }
 
   const ArrayAccessNode* asArrayAccess() const;
   const AssignmentNode* asAssignment() const;
   const BinaryOpNode* asBinaryOp() const;
   const CallNode* asCall() const;
   const ConditionNode* asCondition() const;
+  const ExpressionListNode* asExpressionList() const;
   const IdentifierNode* asIdentifier() const;
   const LiteralNode* asLiteral() const;
   const NotNode* asNot() const;
   const ScopeAccessNode* asScopeAccess() const;
   const StatementListNode* asStatementList() const;
+
+ private:
+  const Type type_;
 };
 
 using NodePtr = UniquePtr<Node>;
@@ -96,6 +119,19 @@ class ConditionNode : public Node {
   NodePtr if_expr_, if_block_, else_stmt_;
 };
 
+class ExpressionListNode : public Node {
+ public:
+  ExpressionListNode() : Node(EXPRESSION_LIST) {}
+
+  void Append(NodePtr expr);
+
+  inline List<NodePtr>::const_iterator begin() const { return exprs_.begin(); }
+  inline List<NodePtr>::const_iterator end() const { return exprs_.end(); }
+
+ private:
+  List<NodePtr> exprs_;
+};
+
 class IdentifierNode : public Node {
  public:
   explicit IdentifierNode(const Token& id);
@@ -139,6 +175,8 @@ class ScopeAccessNode : public Node {
 
 class StatementListNode : public Node {
  public:
+  StatementListNode() : Node(STATEMENT_LIST) {}
+
   void Append(NodePtr stmt);
 
   inline List<NodePtr>::const_iterator begin() const { return stmts_.begin(); }

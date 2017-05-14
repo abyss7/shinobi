@@ -22,6 +22,8 @@ source_set("shi") {
     "shi/parser.hh",
     "shi/token.cc",
     "shi/token.hh",
+    "shi/writer.cc",
+    "shi/writer.hh",
   ]
 
   configs += [ ":private" ]

@@ -7,6 +7,12 @@ namespace shinobi::language::shi {
 
 Parser::Parser(Iterator begin, Iterator end) : begin_(begin), end_(end) {}
 
+NodePtr Parser::Parse() {
+  NodePtr result = ParseStatementList();
+  Expect({Token::INVALID});
+  return result;
+}
+
 bool Parser::Next(Token::Type type, ui32 advance) const {
   // Expect that we don't jump out of range.
   if (begin_ + advance == end_) {
@@ -62,10 +68,15 @@ const Token& Parser::Consume(const Token::TypeList& expected_types) {
  */
 
 NodePtr Parser::ParseAssignment() {
-  auto lvalue = ParseLValue();
+  auto lvalue = ParseIdentifier(false);
   const auto& op =
       Consume({Token::EQUAL, Token::PLUS_EQUALS, Token::MINUS_EQUALS});
   auto rvalue = ParseExpression();
+
+  if (!rvalue) {
+    throw SemanticError(op.location(),
+                        "Expected expression on the right side of assignment");
+  }
 
   return std::make_unique<AssignmentNode>(op, std::move(lvalue),
                                           std::move(rvalue));
@@ -128,7 +139,7 @@ NodePtr Parser::ParseExpression(ui8 precedence) {
     if (Next(Token::LEFT_PAREN, 1)) {
       left = ParseCall(false);
     } else {
-      left = ParseLValue();
+      left = ParseIdentifier(true);
     }
   } else if (Next(Token::LEFT_PAREN)) {
     Consume({Token::LEFT_PAREN});
@@ -185,8 +196,12 @@ NodePtr Parser::ParseLiteral() {
   return std::make_unique<LiteralNode>(value);
 }
 
-NodePtr Parser::ParseLValue() {
+NodePtr Parser::ParseIdentifier(bool expect_access) {
   const auto& id = Consume({Token::IDENTIFIER});
+
+  if (!expect_access) {
+    return std::make_unique<IdentifierNode>(id);
+  }
 
   if (Next(Token::LEFT_BRACKET)) {
     Consume({Token::LEFT_BRACKET});

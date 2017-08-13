@@ -73,4 +73,12 @@ UnexpectedEndOfTokens::UnexpectedEndOfTokens(
   SetExpected("");
 }
 
+SemanticError::SemanticError(const Location& location,
+                             const String& error_message)
+    : location_(location), message_(error_message) {}
+
+const char* SemanticError::what() const noexcept {
+  return message_.c_str();
+}
+
 }  // namespace shinobi::language::shi

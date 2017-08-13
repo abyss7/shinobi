@@ -49,4 +49,14 @@ class UnexpectedEndOfTokens : public SyntaxError {
                         const Location& location);
 };
 
+class SemanticError : public std::exception {
+ public:
+  SemanticError(const Location& location, const String& error_message);
+  const char* what() const noexcept override;
+
+ private:
+  const Location location_;
+  String message_;
+};
+
 }  // namespace shinobi::language::shi

@@ -11,19 +11,19 @@
 
           StatementList = { Statement } .
           Statement     = Assignment | Call | Condition .
-          Assignment    = LValue AssignOp Expr .
+          Assignment    = identifier AssignOp Expr .
           Call          = identifier "(" [ ExprList ] ")" [ Block ] .
           Condition     = "if" "(" Expr ")" Block
                           [ "else" ( Condition | Block ) ] .
           Block         = "{" StatementList "}" .
 
-          LValue      = identifier | ArrayAccess | ScopeAccess .
           ArrayAccess = identifier "[" Expr "]" .
           ScopeAccess = identifier "." identifier .
           ExprList    = Expr { "," Expr } .
           Expr        = UnaryExpr | Expr BinaryOp Expr .
           UnaryExpr   = PrimaryExpr | UnaryOp UnaryExpr .
-          PrimaryExpr = LValue | integer | string | Call | "(" Expr ")"
+          PrimaryExpr = identifier | ArrayAccess | ScopeAccess | integer
+                      | string | Call | "(" Expr ")"
                       | "[" [ ExprList [ "," ] ] "]" .
                       # Call without Block only.
 
@@ -46,7 +46,7 @@ class Parser {
 
   Parser(Iterator begin, Iterator end);
 
-  inline NodePtr Parse() { return ParseStatementList(); }
+  NodePtr Parse();
 
  private:
   bool Next(Token::Type type, ui32 advance = 0u) const;
@@ -61,8 +61,8 @@ class Parser {
   NodePtr ParseCondition();
   NodePtr ParseExpression(ui8 precedence = 0u);
   NodePtr ParseExpressionList();
+  NodePtr ParseIdentifier(bool expect_access);
   NodePtr ParseLiteral();
-  NodePtr ParseLValue();
   NodePtr ParseStatement();
   NodePtr ParseStatementList();
 

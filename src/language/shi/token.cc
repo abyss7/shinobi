@@ -25,6 +25,8 @@ Token::TypeList Token::Literals() {
 // static
 String Token::PrintType(Token::Type type) {
   switch (type) {
+    case INVALID:
+      return "end of stream";
     case INTEGER:
       return "integer literal";
     case STRING:

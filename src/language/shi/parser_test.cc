@@ -1,3 +1,4 @@
+#include <language/shi/exception.hh>
 #include <language/shi/lexer.hh>
 #include <language/shi/parser.hh>
 
@@ -23,6 +24,27 @@ class ParserShi : public ::testing::Test {
   Vector<Token> tokens;
   NodePtr top_node;
 };
+
+TEST_F(ParserShi, EmptyTopNode) {
+  Parse("");
+
+  ASSERT_EQ(Node::STATEMENT_LIST, top_node->type());
+  auto stmt_it = top_node->asStatementList()->begin(),
+       stmt_end = top_node->asStatementList()->end();
+  ASSERT_EQ(stmt_end, stmt_it);
+}
+
+TEST_F(ParserShi, AssignmentNoLeftValue) {
+  const String input = "= b";
+
+  EXPECT_THROW({ Parse(input); }, UnexpectedToken);
+}
+
+TEST_F(ParserShi, AssignmentNoRightValue) {
+  const String input = "a = ";
+
+  EXPECT_THROW({ Parse(input); }, SemanticError);
+}
 
 TEST_F(ParserShi, ComplexExample) {
   const String input =

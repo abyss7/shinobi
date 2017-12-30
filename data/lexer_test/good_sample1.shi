@@ -1,0 +1,17 @@
+# some comment at the begin of line
+
+test_identifier("test_string") {  # some comment at the end of line
+  sources = [
+    "magical",
+    "unicorn",  # pay attention to the trailing comma!
+  ]
+
+  if (arduino == true) {
+    magic = 5 + elefant && gauss * 10 - 5 < 55.4
+  } else {
+    nothing != special
+  }
+
+  public += test_headers
+  public += [ "another_header.h" ]
+}
